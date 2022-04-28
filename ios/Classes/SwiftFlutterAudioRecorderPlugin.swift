@@ -13,18 +13,18 @@ public class SwiftFlutterAudioRecorderPlugin: NSObject, FlutterPlugin, AVAudioRe
     var startTime: Date!
     var settings: [String:Int]!
     var audioRecorder: AVAudioRecorder!
+    var methodChannel : FlutterMethodChannel?
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_audio_recorder", binaryMessenger: registrar.messenger())
         let instance = SwiftFlutterAudioRecorderPlugin()
+        instance.methodChannel = channel
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "current":
-            print("current")
-            
             if audioRecorder == nil {
                 result(nil)
             } else {
@@ -195,6 +195,23 @@ public class SwiftFlutterAudioRecorderPlugin: NSObject, FlutterPlugin, AVAudioRe
         default:
             result(FlutterMethodNotImplemented)
         }
+    }
+    
+    public func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        methodChannel?.invokeMethod("audioRecorderDidFinishRecording", arguments: nil, result: nil);
+    }
+    
+    public func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
+        methodChannel?.invokeMethod("audioRecorderEncodeErrorDidOccur", arguments: ["error" : error?.localizedDescription ?? ""], result: nil);
+    }
+    
+    public func audioRecorderBeginInterruption(_ recorder: AVAudioRecorder) {
+        recorder.pause()
+        methodChannel?.invokeMethod("audioRecorderBeginInterruption", arguments: nil, result: nil);
+    }
+    
+    public func audioRecorderEndInterruption(_ recorder: AVAudioRecorder, withOptions flags: Int) {
+        methodChannel?.invokeMethod("audioRecorderEndInterruption", arguments: nil, result: nil);
     }
     
     // developer.apple.com/documentation/coreaudiotypes/coreaudiotype_constants/1572096-audio_data_format_identifiers

@@ -11,6 +11,14 @@ class FlutterAudioRecorder {
       const MethodChannel('flutter_audio_recorder');
   static const String DEFAULT_EXTENSION = '.m4a';
   static LocalFileSystem fs = LocalFileSystem();
+  static const methodcallback_audioRecorderDidFinishRecording =
+      "audioRecorderDidFinishRecording";
+  static const methodcallback_audioRecorderEncodeErrorDidOccur =
+      "audioRecorderEncodeErrorDidOccur";
+  static const methodcallback_audioRecorderBeginInterruption =
+      "audioRecorderBeginInterruption";
+  static const methodcallback_audioRecorderEndInterruption =
+      "audioRecorderEndInterruption";
 
   String _path;
   String _extension;
@@ -22,8 +30,15 @@ class FlutterAudioRecorder {
   Recording get recording => _recording;
 
   FlutterAudioRecorder(String path,
-      {AudioFormat audioFormat, int sampleRate = 16000}) {
+      {AudioFormat audioFormat,
+      int sampleRate = 16000,
+      Future<dynamic> Function(MethodCall call) callback}) {
     _initRecorder = _init(path, audioFormat, sampleRate);
+    _channel.setMethodCallHandler(callback);
+  }
+
+  void dispose() {
+    _channel.setMethodCallHandler(null);
   }
 
   /// Initialized recorder instance
