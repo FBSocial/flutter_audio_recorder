@@ -20,6 +20,7 @@ public class SwiftFlutterAudioRecorderPlugin: NSObject, FlutterPlugin, AVAudioRe
         let instance = SwiftFlutterAudioRecorderPlugin()
         instance.methodChannel = channel
         registrar.addMethodCallDelegate(instance, channel: channel)
+        NotificationCenter.default.addObserver(instance, selector:#selector(interruptionTypeChanged(_:)), name: NSNotification.Name.AVAudioSessionInterruption, object: nil)
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -205,15 +206,6 @@ public class SwiftFlutterAudioRecorderPlugin: NSObject, FlutterPlugin, AVAudioRe
         methodChannel?.invokeMethod("audioRecorderEncodeErrorDidOccur", arguments: ["error" : error?.localizedDescription ?? ""], result: nil);
     }
     
-    public func audioRecorderBeginInterruption(_ recorder: AVAudioRecorder) {
-        recorder.pause()
-        methodChannel?.invokeMethod("audioRecorderBeginInterruption", arguments: nil, result: nil);
-    }
-    
-    public func audioRecorderEndInterruption(_ recorder: AVAudioRecorder, withOptions flags: Int) {
-        methodChannel?.invokeMethod("audioRecorderEndInterruption", arguments: nil, result: nil);
-    }
-    
     // developer.apple.com/documentation/coreaudiotypes/coreaudiotype_constants/1572096-audio_data_format_identifiers
     func getOutputFormatFromString(_ format : String) -> Int {
         switch format {
@@ -223,6 +215,23 @@ public class SwiftFlutterAudioRecorderPlugin: NSObject, FlutterPlugin, AVAudioRe
             return Int(kAudioFormatLinearPCM)
         default :
             return Int(kAudioFormatMPEG4AAC)
+        }
+    }
+    
+    @objc private func interruptionTypeChanged(_ nof:NSNotification) {
+        guard let userInfo = nof.userInfo, let reasonValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt else { return }
+        switch reasonValue {
+        case AVAudioSession.InterruptionType.began.rawValue://Began
+            if audioRecorder != nil, audioRecorder.isRecording {
+                audioRecorder.stop()
+                methodChannel?.invokeMethod("audioRecorderBeginInterruption", arguments: nil, result: nil);
+            }
+            break
+        case AVAudioSession.InterruptionType.ended.rawValue://End
+            methodChannel?.invokeMethod("audioRecorderEndInterruption", arguments: nil, result: nil);
+            break
+        default:
+            break
         }
     }
 }
