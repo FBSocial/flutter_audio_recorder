@@ -90,8 +90,7 @@ public class SwiftFlutterAudioRecorderPlugin: NSObject, FlutterPlugin, AVAudioRe
                 
                 result(recordingResult)
             } catch {
-                print("fail")
-                result(FlutterError(code: "", message: "Failed to init", details: error))
+                result(false)
             }
         case "start":
             print("start")
