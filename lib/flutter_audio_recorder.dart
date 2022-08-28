@@ -26,13 +26,15 @@ class FlutterAudioRecorder {
   int? _sampleRate;
 
   Future? _initRecorder;
+
   Future? get initialized => _initRecorder;
+
   Recording? get recording => _recording;
 
   FlutterAudioRecorder(String path,
-      {AudioFormat audioFormat,
+      {AudioFormat? audioFormat,
       int sampleRate = 16000,
-      Future<dynamic> Function(MethodCall call) callback}) {
+      Future<dynamic> Function(MethodCall call)? callback}) {
     _initRecorder = _init(path, audioFormat, sampleRate);
     _channel.setMethodCallHandler(callback);
   }
