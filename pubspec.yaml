@@ -34,6 +34,8 @@ flutter:
           android:
             package: com.zeno.flutter_audio_recorder
             pluginClass: FlutterAudioRecorderPlugin
+          ios:
+            pluginClass: FlutterAudioRecorderPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:
