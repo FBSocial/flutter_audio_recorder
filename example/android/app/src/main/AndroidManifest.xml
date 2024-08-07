@@ -1,7 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.zeno.flutter_audio_recorder_example">
    <application
-        android:name="io.flutter.app.FlutterApplication"
         android:label="flutter_audio_recorder_example"
         android:icon="@mipmap/ic_launcher">
         <activity

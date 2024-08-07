@@ -1,0 +1,22 @@
+{
+  "modelVersion": "5.0.0",
+  "name": "flutter_audio_recorder_example",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "@ohos/flutter_ohos": "file:./har/flutter.har"
+  },
+  "devDependencies": {
+    "@ohos/hypium": "1.0.6"
+  },
+  "overrides": {
+    "@ohos/flutter_ohos": "file:./har/flutter.har",
+    "audioplayers_ohos": "/Users/johnson/.pub-cache/git/flutter_audioplayers-e063566bbe3457e235c4f011c517756904fde528/packages/audioplayers_ohos/ohos",
+    "path_provider_ohos": "file:./har/path_provider_ohos.har",
+    "@ohos/flutter_module": "file:./entry",
+    "flutter_audio_recorder": "file:./har/flutter_audio_recorder.har"
+  }
+}

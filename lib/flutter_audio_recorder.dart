@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:file/local.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 
@@ -10,7 +9,6 @@ class FlutterAudioRecorder {
   static const MethodChannel _channel =
       const MethodChannel('flutter_audio_recorder');
   static const String DEFAULT_EXTENSION = '.m4a';
-  static LocalFileSystem fs = LocalFileSystem();
   static const methodcallback_audioRecorderDidFinishRecording =
       "audioRecorderDidFinishRecording";
   static const methodcallback_audioRecorderEncodeErrorDidOccur =
@@ -70,10 +68,10 @@ class FlutterAudioRecorder {
           path += extension;
         }
       }
-      File file = fs.file(path);
-      if (await file.exists()) {
+      File file = File(path);
+      if (await file.existsSync()) {
         throw new Exception("A file already exists at the path :" + path);
-      } else if (!await file.parent.exists()) {
+      } else if (!await file.parent.existsSync()) {
         throw new Exception("The specified parent directory does not exist");
       }
     } else {

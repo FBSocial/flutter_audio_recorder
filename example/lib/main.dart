@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:io' as io;
+import 'dart:io';
 
-import 'package:audioplayers/audioplayers.dart';
-import 'package:file/file.dart';
-import 'package:file/local.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
@@ -34,10 +31,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class RecorderExample extends StatefulWidget {
-  final LocalFileSystem localFileSystem;
-
-  RecorderExample({localFileSystem})
-      : this.localFileSystem = localFileSystem ?? LocalFileSystem();
+  const RecorderExample();
 
   @override
   State<StatefulWidget> createState() => new RecorderExampleState();
@@ -145,9 +139,9 @@ class RecorderExampleState extends State<RecorderExample> {
     try {
       if (await FlutterAudioRecorder.hasPermissions) {
         String customPath = '/flutter_audio_recorder_';
-        io.Directory appDocDirectory;
+        Directory appDocDirectory;
 //        io.Directory appDocDirectory = await getApplicationDocumentsDirectory();
-        if (io.Platform.isIOS) {
+        if (Platform.isIOS) {
           appDocDirectory = await getApplicationDocumentsDirectory();
         } else {
           appDocDirectory = await getExternalStorageDirectory();
@@ -223,8 +217,9 @@ class RecorderExampleState extends State<RecorderExample> {
     var result = await _recorder.stop();
     print("Stop recording: ${result.path}");
     print("Stop recording: ${result.duration}");
-    File file = widget.localFileSystem.file(result.path);
-    print("File length: ${await file.length()}");
+    // File file = widget.localFileSystem.file(result.path);
+    File file = File(result.path);
+    print("File length: ${await file.lengthSync()}");
     setState(() {
       _current = result;
       _currentStatus = _current.status;
@@ -260,8 +255,5 @@ class RecorderExampleState extends State<RecorderExample> {
     return Text(text, style: TextStyle(color: Colors.white));
   }
 
-  void onPlayAudio() async {
-    AudioPlayer audioPlayer = AudioPlayer();
-    await audioPlayer.play(_current.path, isLocal: true);
-  }
+  void onPlayAudio() async {}
 }

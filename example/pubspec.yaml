@@ -8,9 +8,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  path_provider: ^1.6.22
-  file: ^6.1.0
-  audioplayers: ^0.17.4
+  path_provider:
+    git:
+      url: "https://gitee.com/fanbook/flutter_packages.git"
+      path: "packages/path_provider/path_provider"
+      ref: e9c42dec0bd8f5c204840fa6ee2af35210f792fa
 
 
 dev_dependencies:
@@ -20,6 +22,13 @@ dev_dependencies:
     sdk: flutter
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
+dependency_overrides:
+  path_provider:
+    git:
+      url: "https://gitee.com/fanbook/flutter_packages.git"
+      path: "packages/path_provider/path_provider"
+      ref: e9c42dec0bd8f5c204840fa6ee2af35210f792fa
 
 # The following section is specific to Flutter.
 flutter:
