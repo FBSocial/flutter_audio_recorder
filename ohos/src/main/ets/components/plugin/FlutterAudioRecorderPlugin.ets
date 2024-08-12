@@ -16,6 +16,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { abilityAccessCtrl, bundleManager, Permissions } from '@kit.AbilityKit';
 
+
 const permissions: Array<Permissions> = ['ohos.permission.MICROPHONE'];
 
 /** FlutterAudioRecorderPlugin **/
