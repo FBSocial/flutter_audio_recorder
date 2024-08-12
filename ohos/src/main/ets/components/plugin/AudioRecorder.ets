@@ -1,129 +1,95 @@
-
 import util from '@ohos.util';
-import { audio } from '@kit.AudioKit';
+import { media } from '@kit.MediaKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { fileIo } from '@kit.CoreFileKit';
 
-const TAG = 'AudioCapturerDemo';
-
-class Options {
-  offset?: number;
-  length?: number;
-}
-
-let context = getContext(this);
-let bufferSize: number = 0;
-let audioCapturer: audio.AudioCapturer | undefined = undefined;
-let audioStreamInfo: audio.AudioStreamInfo = {
-  samplingRate: audio.AudioSamplingRate.SAMPLE_RATE_48000, // 采样率
-  channels: audio.AudioChannel.CHANNEL_2, // 通道
-  sampleFormat: audio.AudioSampleFormat.SAMPLE_FORMAT_S16LE, // 采样格式
-  encodingType: audio.AudioEncodingType.ENCODING_TYPE_RAW // 编码格式
-}
-let audioCapturerInfo: audio.AudioCapturerInfo = {
-  source: audio.SourceType.SOURCE_TYPE_MIC, // 音源类型
-  capturerFlags: 0 // 音频采集器标志
-}
-let audioCapturerOptions: audio.AudioCapturerOptions = {
-  streamInfo: audioStreamInfo,
-  capturerInfo: audioCapturerInfo
-}
-
-
 export class AudioRecorder {
+  private avRecorder: media.AVRecorder | undefined = undefined;
+  private avProfile: media.AVRecorderProfile = {
+    audioBitrate: 100000, // 音频比特率
+    audioChannels: 2, // 音频声道数
+    audioCodec: media.CodecMimeType.AUDIO_AAC, // 音频编码格式，当前只支持aac
+    audioSampleRate: 48000, // 音频采样率
+    fileFormat: media.ContainerFormatType.CFT_MPEG_4A, // 封装格式，当前只支持m4a
+  };
   private _file : fileIo.File | undefined = undefined;
-  private _filePath : string = getContext().cacheDir + '/' + util.generateRandomUUID() + '.wav';
+  private _filePath : string | undefined = undefined;
   private _mStatus: string = "unset";
 
-  get filePath(): string {return this._filePath;}
+  get filePath(): string {return this._filePath ?? "";}
   get mStatus(): string {return this._mStatus;}
 
-  // 初始化，创建实例，设置监听事件
+  // 注册audioRecorder回调函数
+  setAudioRecorderCallback() {
+    if (this.avRecorder != undefined) {
+      // 状态机变化回调函数
+      this.avRecorder.on('stateChange', (state: media.AVRecorderState, reason: media.StateChangeReason) => {
+        console.log(`AudioRecorder current state is ${state}`);
+      })
+      // 错误上报回调函数
+      this.avRecorder.on('error', (err: BusinessError) => {
+        console.error(`AudioRecorder failed, code is ${err.code}, message is ${err.message}`);
+      })
+    }
+  }
+
   init() {
-    this._mStatus = "initialized";
+    this._filePath = getContext().cacheDir + '/' + util.generateRandomUUID() + '.m4a';
     this._file = fileIo.openSync(this._filePath, fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE);
-    let readDataCallback = (buffer: ArrayBuffer) => {
-      let options: Options = {
-        offset: bufferSize,
-        length: buffer.byteLength
-      }
-      fileIo.writeSync(this._file!.fd, buffer, options);
-      bufferSize += buffer.byteLength;
-    }
-    audio.createAudioCapturer(audioCapturerOptions, (err, capturer) => { // 创建AudioCapturer实例
-      if (err) {
-        console.error(`Invoke createAudioCapturer failed, code is ${err.code}, message is ${err.message}`);
-        return;
-      }
-      console.info(`${TAG}: create AudioCapturer success`);
-      audioCapturer = capturer;
-      if (audioCapturer !== undefined) {
-        (audioCapturer as audio.AudioCapturer).on('readData', readDataCallback);
-      }
-    });
+    this._mStatus = "initialized";
   }
 
-  // 开始一次音频采集
-  start() {
-    if (audioCapturer !== undefined) {
-      let stateGroup = [audio.AudioState.STATE_PREPARED, audio.AudioState.STATE_PAUSED, audio.AudioState.STATE_STOPPED];
-      if (stateGroup.indexOf((audioCapturer as audio.AudioCapturer).state.valueOf()) === -1) { // 当且仅当状态为STATE_PREPARED、STATE_PAUSED和STATE_STOPPED之一时才能启动采集
-        console.error(`${TAG}: start failed`);
-        return;
-      }
+  // 开始录制对应的流程
+  async startRecordingProcess() {
+    if (this.avRecorder != undefined) await this.stopRecordingProcess();
+    // 1.创建录制实例
+    this.avRecorder = await media.createAVRecorder();
+    this.setAudioRecorderCallback();
+    // 2.获取录制文件fd赋予avConfig里的url；参考FilePicker文档
+    let avConfig: media.AVRecorderConfig = {
+      audioSourceType: media.AudioSourceType.AUDIO_SOURCE_TYPE_MIC, // 音频输入源，这里设置为麦克风
+      profile: this.avProfile,
+      url: 'fd://' + this._file!.fd, // 参考应用文件访问与管理开发示例新建并读写一个文件
+    };
+    // 3.配置录制参数完成准备工作
+    await this.avRecorder.prepare(avConfig);
+    // 4.开始录制
+    await this.avRecorder.start();
+    this._mStatus = "recording";
+  }
 
-      // 启动采集
-      (audioCapturer as audio.AudioCapturer).start((err: BusinessError) => {
-        if (err) {
-          console.error('Capturer start failed.');
-        } else {
-          this._mStatus = "recording";
-          console.info('Capturer start success.');
-        }
-      });
+  // 暂停录制对应的流程
+  async pauseRecordingProcess() {
+    if (this.avRecorder != undefined && this.avRecorder.state === 'started') { // 仅在started状态下调用pause为合理状态切换
+      await this.avRecorder.pause();
+      this._mStatus = "paused";
     }
   }
 
-  // 停止采集
-  stop() {
-    if (audioCapturer !== undefined) {
-      // 只有采集器状态为STATE_RUNNING或STATE_PAUSED的时候才可以停止
-      if ((audioCapturer as audio.AudioCapturer).state.valueOf() !== audio.AudioState.STATE_RUNNING && (audioCapturer as audio.AudioCapturer).state.valueOf() !== audio.AudioState.STATE_PAUSED) {
-        console.info('Capturer is not running or paused');
-        return;
-      }
-
-      //停止采集
-      (audioCapturer as audio.AudioCapturer).stop((err: BusinessError) => {
-        if (err) {
-          console.error('Capturer stop failed.');
-        } else {
-          fileIo.close(this._file);
-          this._mStatus = "paused";
-          console.info('Capturer stop success.');
-        }
-      });
+  // 恢复录制对应的流程
+  async resumeRecordingProcess() {
+    if (this.avRecorder != undefined && this.avRecorder.state === 'paused') { // 仅在paused状态下调用resume为合理状态切换
+      await this.avRecorder.resume();
+      this._mStatus = "recording";
     }
   }
 
-  // 销毁实例，释放资源
-  release() {
-    if (audioCapturer !== undefined) {
-      // 采集器状态不是STATE_RELEASED或STATE_NEW状态，才能release
-      if ((audioCapturer as audio.AudioCapturer).state.valueOf() === audio.AudioState.STATE_RELEASED || (audioCapturer as audio.AudioCapturer).state.valueOf() === audio.AudioState.STATE_NEW) {
-        console.info('Capturer already released');
-        return;
+  // 停止录制对应的流程
+  async stopRecordingProcess() {
+    if (this.avRecorder != undefined) {
+      // 1. 停止录制
+      if (this.avRecorder.state === 'started'
+        || this.avRecorder.state === 'paused') { // 仅在started或者paused状态下调用stop为合理状态切换
+        await this.avRecorder.stop();
       }
-
-      //释放资源
-      (audioCapturer as audio.AudioCapturer).release((err: BusinessError) => {
-        if (err) {
-          console.error('Capturer release failed.');
-        } else {
-          this._mStatus = "stopped";
-          console.info('Capturer release success.');
-        }
-      });
+      // 2.重置
+      await this.avRecorder.reset();
+      // 3.释放录制实例
+      await this.avRecorder.release();
+      this.avRecorder = undefined;
+      // 4.关闭录制文件fd
+      fileIo.close(this._file);
+      this._mStatus = "stopped";
     }
   }
 }

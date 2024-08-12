@@ -22,18 +22,16 @@ const permissions: Array<Permissions> = ['ohos.permission.MICROPHONE'];
 export default class FlutterAudioRecorderPlugin implements FlutterPlugin, MethodCallHandler {
   private channel: MethodChannel | null = null;
   private recorder: AudioRecorder | null = null;
-  private context: common.Context | null = null;
 
   constructor() {}
 
   getUniqueClassName(): string {
-    return "FlutterAudioRecorderPlugin"
+    return "FlutterAudioRecorderPlugin";
   }
 
   onAttachedToEngine(binding: FlutterPluginBinding): void {
     this.channel = new MethodChannel(binding.getBinaryMessenger(), "flutter_audio_recorder");
-    this.channel.setMethodCallHandler(this)
-    this.context = binding.getApplicationContext();
+    this.channel.setMethodCallHandler(this);
   }
 
   onDetachedFromEngine(binding: FlutterPluginBinding): void {
@@ -53,7 +51,7 @@ export default class FlutterAudioRecorderPlugin implements FlutterPlugin, Method
         let initResult : Map<string, Object> = new Map();
         initResult.set("duration", 0);
         initResult.set("path", this.recorder?.filePath ?? "");
-        initResult.set("audioFormat", "wav");
+        initResult.set("audioFormat", "m4a");
         initResult.set("peakPower", 0);
         initResult.set("averagePower", 0);
         initResult.set("isMeteringEnabled", true);
@@ -64,7 +62,7 @@ export default class FlutterAudioRecorderPlugin implements FlutterPlugin, Method
         let currentResult : Map<string, Object> = new Map();
         currentResult.set("duration", 0);
         currentResult.set("path", this.recorder?.filePath ?? "");
-        currentResult.set("audioFormat", "wav");
+        currentResult.set("audioFormat", "m4a");
         currentResult.set("peakPower", 0);
         currentResult.set("averagePower", 0);
         currentResult.set("isMeteringEnabled", true);
@@ -72,15 +70,15 @@ export default class FlutterAudioRecorderPlugin implements FlutterPlugin, Method
         result.success(currentResult);
         break;
       case "start":
-        this.recorder?.start();
+        this.recorder?.startRecordingProcess();
         result.success(null);
         break;
       case "pause":
-        this.recorder?.stop();
+        this.recorder?.pauseRecordingProcess();
         result.success(null);
         break;
       case "resume":
-        this.recorder?.start();
+        this.recorder?.resumeRecordingProcess();
         result.success(null);
         break;
       case "stop":
@@ -90,13 +88,12 @@ export default class FlutterAudioRecorderPlugin implements FlutterPlugin, Method
           let currentResult : Map<string, Object> = new Map();
           currentResult.set("duration", 0);
           currentResult.set("path", this.recorder?.filePath ?? "");
-          currentResult.set("audioFormat", "wav");
+          currentResult.set("audioFormat", "m4a");
           currentResult.set("peakPower", 0);
           currentResult.set("averagePower", 0);
           currentResult.set("isMeteringEnabled", true);
           currentResult.set("status", this.recorder?.mStatus ?? "");
-          this.recorder?.stop();
-          this.recorder?.release();
+          this.recorder?.stopRecordingProcess();
           result.success(currentResult);
         }
         break;
