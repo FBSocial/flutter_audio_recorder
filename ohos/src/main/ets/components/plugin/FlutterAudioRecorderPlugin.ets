@@ -7,13 +7,8 @@ import {
   MethodResult,
 } from '@ohos/flutter_ohos';
 
-import common from '@ohos.app.ability.common';
 import { AudioRecorder } from './AudioRecorder';
-
-import util from '@ohos.util';
-import { audio } from '@kit.AudioKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { fileIo } from '@kit.CoreFileKit';
 import { abilityAccessCtrl, bundleManager, Permissions } from '@kit.AbilityKit';
 
 
