@@ -34,8 +34,6 @@ export class AudioRecorder {
   }
 
   init() {
-    this._filePath = getContext().cacheDir + '/' + util.generateRandomUUID() + '.m4a';
-    this._file = fileIo.openSync(this._filePath, fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE);
     this._mStatus = "initialized";
   }
 
@@ -46,6 +44,8 @@ export class AudioRecorder {
     this.avRecorder = await media.createAVRecorder();
     this.setAudioRecorderCallback();
     // 2.获取录制文件fd赋予avConfig里的url；参考FilePicker文档
+    this._filePath = getContext().cacheDir + '/' + util.generateRandomUUID() + '.m4a';
+    this._file = fileIo.openSync(this._filePath, fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE);
     let avConfig: media.AVRecorderConfig = {
       audioSourceType: media.AudioSourceType.AUDIO_SOURCE_TYPE_MIC, // 音频输入源，这里设置为麦克风
       profile: this.avProfile,
