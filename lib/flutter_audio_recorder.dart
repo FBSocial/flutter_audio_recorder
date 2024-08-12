@@ -82,8 +82,11 @@ class FlutterAudioRecorder {
     _sampleRate = sampleRate;
 
     late Map<String, Object> response;
-    var result = await _channel.invokeMethod('init',
-        {"path": _path, "extension": _extension, "sampleRate": _sampleRate});
+    var result = await _channel.invokeMethod('init', {
+      "path": _path,
+      "extension": _extension,
+      "sampleRate": _sampleRate?.toDouble()
+    });
 
     if (result == false) {
       throw Exception("flutter audio record init error");
@@ -135,9 +138,7 @@ class FlutterAudioRecorder {
   /// Metering level, Duration, Status...
   Future<Recording?> current({int channel = 0}) async {
     Map<String, Object> response;
-
     var result = await _channel.invokeMethod('current', {"channel": channel});
-
     if (result != null && _recording?.status != RecordingStatus.Stopped) {
       response = Map.from(result);
       _responseToRecording(response);
@@ -158,15 +159,15 @@ class FlutterAudioRecorder {
   void _responseToRecording(Map<String, Object>? response) {
     if (response == null) return;
 
-    _recording!.duration =
-        new Duration(milliseconds: response['duration'] as int);
+    _recording!.duration = new Duration(
+        milliseconds: int.tryParse(response['duration'].toString()) ?? 0);
     _recording!.path = response['path'] as String?;
     _recording!.audioFormat =
         _stringToAudioFormat(response['audioFormat'] as String?);
     _recording!.extension = response['audioFormat'] as String?;
     _recording!.metering = new AudioMetering(
-        peakPower: response['peakPower'] as double?,
-        averagePower: response['averagePower'] as double?,
+        peakPower: double.tryParse(response['peakPower'].toString()) ?? 0,
+        averagePower: double.tryParse(response['averagePower'].toString()) ?? 0,
         isMeteringEnabled: response['isMeteringEnabled'] as bool?);
     _recording!.status =
         _stringToRecordingStatus(response['status'] as String?);
