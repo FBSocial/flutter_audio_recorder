@@ -85,7 +85,7 @@ class FlutterAudioRecorder {
     var result = await _channel.invokeMethod('init', {
       "path": _path,
       "extension": _extension,
-      "sampleRate": _sampleRate?.toDouble()
+      "sampleRate": Platform.isAndroid ? (_sampleRate ?? 0) : _sampleRate?.toDouble()
     });
 
     if (result == false) {
