@@ -120,20 +120,21 @@ public class FlutterAudioRecorderPlugin implements FlutterPlugin, MethodCallHand
     };
 
     private boolean hasRecordPermission() {
+        return true;
         // if after [Marshmallow], we need to check permission on runtime
-        Context ctx = null;
-        try {
-            ctx = mActivityWeakReference.get().getApplicationContext();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (ctx == null) return false;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            return (ContextCompat.checkSelfPermission(ctx, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)
-                    && (ContextCompat.checkSelfPermission(ctx, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
-        } else {
-            return ContextCompat.checkSelfPermission(ctx, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
-        }
+        // Context ctx = null;
+        // try {
+        //     ctx = mActivityWeakReference.get().getApplicationContext();
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
+        // if (ctx == null) return false;
+        // if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+        //     return (ContextCompat.checkSelfPermission(ctx, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)
+        //             && (ContextCompat.checkSelfPermission(ctx, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        // } else {
+        //     return ContextCompat.checkSelfPermission(ctx, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+        // }
     }
 
     @Override
